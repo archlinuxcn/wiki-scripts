@@ -141,7 +141,7 @@ function addPageHooks() {
     translateTabSection.className = "booklet section section-characters section-hidden";
     translateTabSection.id = "translateTabSection";
     translateTabSection.innerHTML = `<b>Wiki Translate Userscript</b> 由 Archeb 为 <a href="https://wiki.archlinuxcn.org/">Arch Linux 中文维基</a>翻译项目制作<br>
-     <span>使用方法：用鼠标在编辑器中选择要翻译的文本，然后等待翻译完毕后点击选择文本即可插入。建议一次只选择一句话，或多句具有强上下文逻辑关联的句子，以获得最佳效果。如果有一些六位随机字符出现，请点击重试，一般可以解决问题。</span><br>
+     <span>使用方法：用鼠标在编辑器中选择要翻译的文本，然后等待翻译完毕后点击选择文本即可复制到剪贴板。建议一次只选择一句话，或多句具有强上下文逻辑关联的句子，以获得最佳效果。如果有一些六位随机字符出现，请点击重试，一般可以解决问题。</span><br>
      <span>当前状态：<span id="translateStatus">未选择</span></span><br>
      <span>翻译结果<a id="translateRetry">[重试]</a>：</span><div id="translateResult"></div>
      `;
@@ -201,8 +201,8 @@ function doTextareaTranslate() {
             // add click event listener
             elTranslateResult.querySelectorAll('a').forEach((el) => {
                 el.addEventListener('click', () => {
-                    appendTranslation(el.innerHTML);
-                    // clean elTranslateResult
+                    navigator.clipboard.writeText(el.innerHTML);
+                    elTranslateStatus.innerHTML = '已复制到剪贴板';
                     elTranslateResult.innerHTML = '';
                 })
             });
@@ -216,14 +216,6 @@ function doTextareaTranslate() {
         elTranslateStatus.innerHTML = '未选择';
         elTranslateResult.innerHTML = '';
     }
-}
-
-function appendTranslation(translation) {
-    let textarea = document.querySelector('#wpTextbox1');
-    let selectionStart = textarea.selectionStart;
-    let text = textarea.value;
-    let newText = text.substring(0, selectionStart) + translation + "\n" + text.substring(selectionStart);
-    textarea.value = newText;
 }
 
 
