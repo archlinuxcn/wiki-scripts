@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wiki Translate Userscript
 // @namespace    https://github.com/archlinuxcn/wiki-scripts
-// @version      0.1
+// @version      0.2
 // @description  为中文编辑者设计的翻译辅助脚本
 // @author       Archeb
 // @match        https://wiki.archlinuxcn.org/*
@@ -140,7 +140,6 @@ function addPageHooks() {
     let translateTabSection = document.createElement('div')
     translateTabSection.className = "booklet section section-characters section-hidden";
     translateTabSection.id = "translateTabSection";
-    translateTabSection.style.height = "113px";
     translateTabSection.innerHTML = `<div style="background: #f8f9fa;border-bottom: 1px solid #c8ccd1;"><b>Wiki Translate Userscript</b> 为 <a href="https://wiki.archlinuxcn.org/">Arch Linux 中文维基</a> 翻译项目制作 <a href="https://github.com/archlinuxcn/wiki-scripts">源代码</a><br>
      <span>使用方法：用鼠标在编辑器中选择要翻译的文本，然后等待翻译完毕后点击选择文本即可复制到剪贴板。建议一次只选择一句话，或多句具有强上下文逻辑关联的句子，以获得最佳效果。如果有一些六位随机字符出现，请点击重试，一般可以解决问题。</span><br>
      <span>当前状态：<span id="translateStatus">未选择</span></span><br>
@@ -152,14 +151,17 @@ function addPageHooks() {
     });
     document.querySelector('.wikiEditor-ui .wikiEditor-ui-toolbar .sections').appendChild(translateTabSection);
 
+
     translateButton.addEventListener('click', () => {
         // toggle translateTabSection
         if (translateTabSection.classList.contains('section-hidden')) {
             translateTabSection.classList.remove('section-hidden');
             translateTabSection.classList.add('section-visible');
+            translateTabSection.style.height = translateTabSection.getBoundingClientRect().height + 'px';
         } else {
             translateTabSection.classList.remove('section-visible');
             translateTabSection.classList.add('section-hidden');
+            translateTabSection.style.height = null;
         }
     });
 
