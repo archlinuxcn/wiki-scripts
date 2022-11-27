@@ -140,12 +140,16 @@ function addPageHooks() {
     let translateTabSection = document.createElement('div')
     translateTabSection.className = "booklet section section-characters section-hidden";
     translateTabSection.id = "translateTabSection";
-    translateTabSection.innerHTML = `<b>Wiki Translate Userscript</b> 由 Archeb 为 <a href="https://wiki.archlinuxcn.org/">Arch Linux 中文维基</a>翻译项目制作<br>
+    translateTabSection.style.height = "113px";
+    translateTabSection.innerHTML = `<div style="background: #f8f9fa;border-bottom: 1px solid #c8ccd1;"><b>Wiki Translate Userscript</b> 为 <a href="https://wiki.archlinuxcn.org/">Arch Linux 中文维基</a> 翻译项目制作 <a href="https://github.com/archlinuxcn/wiki-scripts">源代码</a><br>
      <span>使用方法：用鼠标在编辑器中选择要翻译的文本，然后等待翻译完毕后点击选择文本即可复制到剪贴板。建议一次只选择一句话，或多句具有强上下文逻辑关联的句子，以获得最佳效果。如果有一些六位随机字符出现，请点击重试，一般可以解决问题。</span><br>
      <span>当前状态：<span id="translateStatus">未选择</span></span><br>
-     <span>翻译结果<a id="translateRetry">[重试]</a>：</span><div id="translateResult"></div>
+     <span>翻译结果<a id="translateRetry">[重试]</a>：</span><div id="translateResult"></div></div>
      `;
-    translateTabSection.querySelector('#translateRetry').addEventListener('click', doTextareaTranslate);
+    translateTabSection.querySelector('#translateRetry').addEventListener('mousedown', (event) => {
+        doTextareaTranslate(true);
+        event.preventDefault();
+    });
     document.querySelector('.wikiEditor-ui .wikiEditor-ui-toolbar .sections').appendChild(translateTabSection);
 
     translateButton.addEventListener('click', () => {
@@ -175,7 +179,7 @@ function addPageHooks() {
     });
 }
 
-function doTextareaTranslate() {
+function doTextareaTranslate(ignoreCheck = false) {
     let translator = new Translator();
     // get the selection inside the textarea
     let selection = document.querySelector('#wpTextbox1').value.substring(document.querySelector('#wpTextbox1').selectionStart, document.querySelector('#wpTextbox1').selectionEnd);
@@ -183,13 +187,18 @@ function doTextareaTranslate() {
     let elTranslateResult = document.querySelector('#translateResult');
 
     // if selection includes chinese characters, stop and return
-    if (/[\u4e00-\u9fa5]/.test(selection)) {
+    if (/[\u4e00-\u9fa5]/.test(selection) && !ignoreCheck) {
         elTranslateStatus.innerText = '选择的是中文';
         elTranslateResult.innerText = '';
         return;
     }
 
+    if (window.lastSelection === selection && !ignoreCheck) {
+        return;
+    }
+
     if (selection) {
+        window.lastSelection = selection;
         elTranslateStatus.innerHTML = '正在翻译...';
         elTranslateResult.innerHTML = `<span>正在翻译...</span>`;
         translator.translate(selection, 'en', 'zh').then((results) => {
@@ -200,10 +209,11 @@ function doTextareaTranslate() {
             }).join('');
             // add click event listener
             elTranslateResult.querySelectorAll('a').forEach((el) => {
-                el.addEventListener('click', () => {
+                el.addEventListener('mousedown', (event) => {
                     navigator.clipboard.writeText(el.innerHTML);
                     elTranslateStatus.innerHTML = '已复制到剪贴板';
                     elTranslateResult.innerHTML = '';
+                    event.preventDefault();
                 })
             });
         }
